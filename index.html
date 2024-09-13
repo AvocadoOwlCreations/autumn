@@ -1,0 +1,128 @@
+<html><head><base href="https://autumntrees.example.com/">
+<title>Autumn Trees Background Generator</title>
+<style>
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        font-family: Arial, sans-serif;
+        overflow: hidden;
+    }
+
+    .container {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .controls {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 20px;
+        border-radius: 10px;
+    }
+
+    button {
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    #canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+</style>
+</head>
+<body>
+    <div class="container">
+        <canvas id="canvas"></canvas>
+        <div class="controls">
+            <button id="generate">Generate New Autumn Scene</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const generateBtn = document.getElementById('generate');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function randomColor(baseColor, range) {
+            const r = Math.floor(baseColor[0] + Math.random() * range - range / 2);
+            const g = Math.floor(baseColor[1] + Math.random() * range - range / 2);
+            const b = Math.floor(baseColor[2] + Math.random() * range - range / 2);
+            return `rgb(${r},${g},${b})`;
+        }
+
+        function drawTree(x, y, trunkHeight, branchLength, angle, depth) {
+            if (depth === 0) return;
+
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            const endX = x + Math.cos(angle) * branchLength;
+            const endY = y - Math.sin(angle) * branchLength;
+            ctx.lineTo(endX, endY);
+            ctx.strokeStyle = depth === 1 ? randomColor([139, 69, 19], 30) : randomColor([101, 67, 33], 30);
+            ctx.lineWidth = depth * 2;
+            ctx.stroke();
+
+            if (depth === 1) {
+                const leafColor = randomColor([255, 69, 0], 100);
+                ctx.beginPath();
+                ctx.arc(endX, endY, 5 + Math.random() * 5, 0, Math.PI * 2);
+                ctx.fillStyle = leafColor;
+                ctx.fill();
+            } else {
+                drawTree(endX, endY, trunkHeight, branchLength * 0.8, angle - 0.3, depth - 1);
+                drawTree(endX, endY, trunkHeight, branchLength * 0.8, angle + 0.3, depth - 1);
+            }
+        }
+
+        function generateScene() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Sky gradient
+            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            gradient.addColorStop(0, randomColor([135, 206, 235], 30));
+            gradient.addColorStop(1, randomColor([255, 255, 255], 30));
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Ground
+            ctx.fillStyle = randomColor([34, 139, 34], 50);
+            ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3);
+
+            // Generate trees
+            const numTrees = Math.floor(5 + Math.random() * 10);
+            for (let i = 0; i < numTrees; i++) {
+                const x = Math.random() * canvas.width;
+                const y = canvas.height * 0.7;
+                const trunkHeight = 50 + Math.random() * 100;
+                const branchLength = 30 + Math.random() * 20;
+                const angle = Math.PI / 2;
+                const depth = 5 + Math.floor(Math.random() * 3);
+                drawTree(x, y, trunkHeight, branchLength, angle, depth);
+            }
+        }
+
+        generateBtn.addEventListener('click', generateScene);
+        generateScene(); // Initial generation
+    </script>
+</body>
+</html>
